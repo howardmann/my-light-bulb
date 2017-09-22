@@ -4,7 +4,7 @@
   "description": "",
   "main": "hackery.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +12,9 @@
   "dependencies": {
     "axios": "^0.16.2",
     "yargs-parser": "^7.0.0"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "sinon": "^3.3.0"
   }
 }
