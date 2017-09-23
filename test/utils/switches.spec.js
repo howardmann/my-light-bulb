@@ -4,8 +4,9 @@ let axios = require('axios')
 let {
   switchOn,
   switchOff,
-  switchColor
-} = require('../switches.js')
+  switchColor,
+  switchBrightness
+} = require('../../utils/switches.js')
 
 describe('#lifx', () => {
   describe('.switchOn', () => {
@@ -35,6 +36,16 @@ describe('#lifx', () => {
       switchColor('blue')
       expect(stub.called).to.be.true
       expect(stub.calledWith('https://api.lifx.com/v1/lights/all/state', {power: "on", color: "blue"})).to.be.true
+      stub.restore()
+    })
+  })
+  describe('.switchBrightness', () => {
+    it('should exist', () => expect(switchBrightness).to.not.be.undefined)
+    it('should switch the brightness level', () => {
+      let stub = sinon.stub(axios, 'put').returns(Promise.resolve({data: 'ok'}))
+      switchBrightness("0.5")
+      expect(stub.called).to.be.true
+      expect(stub.calledWith('https://api.lifx.com/v1/lights/all/state', {power: "on", brightness: 0.5})).to.be.true
       stub.restore()
     })
   })

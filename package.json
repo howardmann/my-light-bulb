@@ -4,17 +4,21 @@
   "description": "",
   "main": "hackery.js",
   "scripts": {
-    "test": "mocha --reporter=nyan"
+    "test": "mocha --recursive",
+    "watch": "watchify ./client/main.js -o ./public/dist/bundle.js -v"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.16.2",
+    "jquery": "^3.2.1",
     "yargs-parser": "^7.0.0"
   },
   "devDependencies": {
+    "browserify": "^14.4.0",
     "chai": "^4.1.2",
-    "sinon": "^3.3.0"
+    "sinon": "^3.3.0",
+    "watchify": "^3.9.0"
   }
 }
