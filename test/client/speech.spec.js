@@ -19,6 +19,23 @@ let speech = new makeSpeech(stubServices)
 
 describe('#speech', () => {
   it('should exist', () => expect(speech).to.not.be.undefined)
+  describe('.init', () => {
+    it('should call cacheDOM, setup, bindEvents and render', () => {
+      // Stub
+      let cacheDOMStub = sinon.stub(speech, 'cacheDOM')
+      let setupStub = sinon.stub(speech, 'setup')
+      let bindEventsStub = sinon.stub(speech, 'bindEvents')
+      let renderStub = sinon.stub(speech, 'render')
+      let stubsArr = [cacheDOMStub, setupStub, bindEventsStub, renderStub]
+      
+      // Execute, test and restore
+      speech.init()
+      stubsArr.forEach(stub => {
+        expect(stub.called).to.be.true
+        stub.restore()
+      })
+    })
+  })
   describe('.cacheDOM', () => {
     it('should cache #main div into this.$main property', () => {
       speech.cacheDOM()
@@ -63,6 +80,24 @@ describe('#speech', () => {
       expect(speech.transcript).to.equal(actual)
       expect(renderSpy.calledWith(actual)).to.be.true
       expect(regexSwitchSpy.calledWith(actual)).to.be.true
+    })
+  })
+  describe('.restart', () => {
+    it('should call recognition.start', () => {
+      speech.setup()
+      speech.restart()
+      // We call speech.setup 3 times above and restart once here. recognition.start is based on the global window object hence this is correct
+      expect(speech.recognition.start.callCount).to.be.equal(4)
+    })
+  })
+  describe('.render', () => {
+    it('should call call $main.html(transcript)', () => {
+      speech.cacheDOM()
+      speech.setup()
+      // Override transcript for testing purposes
+      speech.transcript = 'banana'
+      speech.render()
+      expect(speech.$main.html.secondCall.args[0]).to.be.eql('banana')
     })
   })
   describe('.regexSwitch', () => {
