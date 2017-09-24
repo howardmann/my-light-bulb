@@ -1,6 +1,15 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-// Dependecies
-let $ = require('jquery')
+let makeSpeech = require('./speech')
+let services = {
+  $: require('jquery')
+}
+
+// Using dependency injection
+let speech = new makeSpeech(services)
+speech.init()
+
+},{"./speech":2,"jquery":29}],2:[function(require,module,exports){
+// Util dependencies
 let {
   switchOn,
   switchOff,
@@ -8,24 +17,37 @@ let {
   switchBrightness
 } = require('../utils/switches.js')
 
-var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition)();
-
-$(document).ready(function () {
-  console.log('DOM loaded');
-  // Cache DOM
-  let $main = $('#main')
-
-  recognition.lang = 'en-US';
-  recognition.interimResults = true;
-  recognition.continuous = true;
-  recognition.start();
-  console.log('start');
-
-  recognition.onresult = function (event) {
+// We cannot use arrow functions for constructor functions
+let makeSpeech = function(services){
+  this.init = () => {
+    this.cacheDOM()
+    this.setup()
+    this.bindEvents()
+    this.render()
+  }
+  this.cacheDOM = () => {
+    this.$main = services.$('#main')
+  }
+  this.setup = () => {
+    this.transcript = 'Text renders here'        
+    this.recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition)()
+    this.recognition.lang = 'en-US';
+    this.recognition.interimResults = true;
+    this.recognition.continuous = true;
+    this.recognition.start();
+  }
+  this.bindEvents = () => {
+    this.recognition.onresult = this.callSwitch.bind(this)
+    this.recognition.onend = this.restart.bind(this)
+  }
+  this.callSwitch = (event) => {
     let index = event.resultIndex
-    let transcript = event.results[index][0].transcript
-    console.log('You said: ', transcript);
-    $main.html(transcript)
+    this.transcript = event.results[index][0].transcript
+    console.log('You said: ', this.transcript)
+    this.render(this.transcript)
+    this.regexSwitch(this.transcript)
+  }
+  this.regexSwitch = (transcript) => {
     if (/open/gi.exec(transcript)) {
       console.log('open');
       switchOn()
@@ -35,29 +57,32 @@ $(document).ready(function () {
     } else if (/magic/gi.exec(transcript)) {
       console.log('magic');
       switchColor('random')
-    } else if (/white/gi.exec(transcript)){
+    } else if (/white/gi.exec(transcript)) {
       switchColor('white')
     } else if (/strong/gi.exec(transcript)) {
       console.log('strong');
       switchBrightness(1)
-    } else if (/medium/gi.exec(transcript)){
+    } else if (/medium/gi.exec(transcript)) {
       console.log('medium');
       switchBrightness(0.6)
-    } else if (/weak/gi.exec(transcript)){
+    } else if (/weak/gi.exec(transcript)) {
       console.log('weak');
       switchBrightness(0.2)
     }
-  };
-
-  recognition.onend = function () {
-    console.log('restart');
-    recognition.start()
   }
-})
+  this.restart = () => {
+    console.log('restart');
+    this.recognition.start()
+  },
+  this.render = () => {
+    this.$main.html(this.transcript)
+  }
+}
 
-},{"../utils/switches.js":30,"jquery":28}],2:[function(require,module,exports){
+module.exports = makeSpeech
+},{"../utils/switches.js":31}],3:[function(require,module,exports){
 module.exports = require('./lib/axios');
-},{"./lib/axios":4}],3:[function(require,module,exports){
+},{"./lib/axios":5}],4:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -241,7 +266,7 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":10,"./../core/settle":13,"./../helpers/btoa":17,"./../helpers/buildURL":18,"./../helpers/cookies":20,"./../helpers/isURLSameOrigin":22,"./../helpers/parseHeaders":24,"./../utils":26,"_process":29}],4:[function(require,module,exports){
+},{"../core/createError":11,"./../core/settle":14,"./../helpers/btoa":18,"./../helpers/buildURL":19,"./../helpers/cookies":21,"./../helpers/isURLSameOrigin":23,"./../helpers/parseHeaders":25,"./../utils":27,"_process":30}],5:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -295,7 +320,7 @@ module.exports = axios;
 // Allow use of default import syntax in TypeScript
 module.exports.default = axios;
 
-},{"./cancel/Cancel":5,"./cancel/CancelToken":6,"./cancel/isCancel":7,"./core/Axios":8,"./defaults":15,"./helpers/bind":16,"./helpers/spread":25,"./utils":26}],5:[function(require,module,exports){
+},{"./cancel/Cancel":6,"./cancel/CancelToken":7,"./cancel/isCancel":8,"./core/Axios":9,"./defaults":16,"./helpers/bind":17,"./helpers/spread":26,"./utils":27}],6:[function(require,module,exports){
 'use strict';
 
 /**
@@ -316,7 +341,7 @@ Cancel.prototype.__CANCEL__ = true;
 
 module.exports = Cancel;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 
 var Cancel = require('./Cancel');
@@ -375,14 +400,14 @@ CancelToken.source = function source() {
 
 module.exports = CancelToken;
 
-},{"./Cancel":5}],7:[function(require,module,exports){
+},{"./Cancel":6}],8:[function(require,module,exports){
 'use strict';
 
 module.exports = function isCancel(value) {
   return !!(value && value.__CANCEL__);
 };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
 
 var defaults = require('./../defaults');
@@ -470,7 +495,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":15,"./../helpers/combineURLs":19,"./../helpers/isAbsoluteURL":21,"./../utils":26,"./InterceptorManager":9,"./dispatchRequest":11}],9:[function(require,module,exports){
+},{"./../defaults":16,"./../helpers/combineURLs":20,"./../helpers/isAbsoluteURL":22,"./../utils":27,"./InterceptorManager":10,"./dispatchRequest":12}],10:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -524,7 +549,7 @@ InterceptorManager.prototype.forEach = function forEach(fn) {
 
 module.exports = InterceptorManager;
 
-},{"./../utils":26}],10:[function(require,module,exports){
+},{"./../utils":27}],11:[function(require,module,exports){
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -544,7 +569,7 @@ module.exports = function createError(message, config, code, request, response) 
   return enhanceError(error, config, code, request, response);
 };
 
-},{"./enhanceError":12}],11:[function(require,module,exports){
+},{"./enhanceError":13}],12:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -625,7 +650,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"../cancel/isCancel":7,"../defaults":15,"./../utils":26,"./transformData":14}],12:[function(require,module,exports){
+},{"../cancel/isCancel":8,"../defaults":16,"./../utils":27,"./transformData":15}],13:[function(require,module,exports){
 'use strict';
 
 /**
@@ -648,7 +673,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
   return error;
 };
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 
 var createError = require('./createError');
@@ -676,7 +701,7 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":10}],14:[function(require,module,exports){
+},{"./createError":11}],15:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -698,7 +723,7 @@ module.exports = function transformData(data, headers, fns) {
   return data;
 };
 
-},{"./../utils":26}],15:[function(require,module,exports){
+},{"./../utils":27}],16:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -794,7 +819,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":3,"./adapters/xhr":3,"./helpers/normalizeHeaderName":23,"./utils":26,"_process":29}],16:[function(require,module,exports){
+},{"./adapters/http":4,"./adapters/xhr":4,"./helpers/normalizeHeaderName":24,"./utils":27,"_process":30}],17:[function(require,module,exports){
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -807,7 +832,7 @@ module.exports = function bind(fn, thisArg) {
   };
 };
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict';
 
 // btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
@@ -845,7 +870,7 @@ function btoa(input) {
 
 module.exports = btoa;
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -915,7 +940,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
   return url;
 };
 
-},{"./../utils":26}],19:[function(require,module,exports){
+},{"./../utils":27}],20:[function(require,module,exports){
 'use strict';
 
 /**
@@ -931,7 +956,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
     : baseURL;
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -986,7 +1011,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":26}],21:[function(require,module,exports){
+},{"./../utils":27}],22:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1002,7 +1027,7 @@ module.exports = function isAbsoluteURL(url) {
   return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 };
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1072,7 +1097,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":26}],23:[function(require,module,exports){
+},{"./../utils":27}],24:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -1086,7 +1111,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
   });
 };
 
-},{"../utils":26}],24:[function(require,module,exports){
+},{"../utils":27}],25:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1125,7 +1150,7 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":26}],25:[function(require,module,exports){
+},{"./../utils":27}],26:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1154,7 +1179,7 @@ module.exports = function spread(callback) {
   };
 };
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -1459,7 +1484,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":16,"is-buffer":27}],27:[function(require,module,exports){
+},{"./helpers/bind":17,"is-buffer":28}],28:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -1482,7 +1507,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.2.1
  * https://jquery.com/
@@ -11737,7 +11762,7 @@ if ( !noGlobal ) {
 return jQuery;
 } );
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -11923,7 +11948,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 (function (process){
 let axios = require('axios')
 
@@ -11983,4 +12008,4 @@ module.exports = {
   switchBrightness
 }
 }).call(this,require('_process'))
-},{"_process":29,"axios":2}]},{},[1]);
+},{"_process":30,"axios":3}]},{},[1]);
