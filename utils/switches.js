@@ -1,3 +1,6 @@
+let switches = module.exports = {}
+
+// Dependencies
 let axios = require('axios')
 
 // API and bearer token
@@ -7,7 +10,7 @@ let config = {
   headers: { 'Authorization': `Bearer ${TOKEN}` }
 };
 
-let switchOn = () => {
+switches.switchOn = () => {
   let payload = { power: "on" }
 
   axios.put(url, payload, config).then(results => {
@@ -16,7 +19,7 @@ let switchOn = () => {
   })
 }
 
-let switchOff = () => {
+switches.switchOff = () => {
   let payload = { power: "off" }
 
   axios.put(url, payload, config).then(results => {
@@ -25,7 +28,7 @@ let switchOff = () => {
   })
 }
 
-let switchColor = (color) => {
+switches.switchColor = (color) => {
   let payload = {
     power: "on",
     color: color
@@ -36,7 +39,7 @@ let switchColor = (color) => {
   })
 }
 
-let switchBrightness = (percentage) => {
+switches.switchBrightness = (percentage) => {
   let level = Number(percentage)
   console.log(level);
   let payload = {
@@ -47,11 +50,4 @@ let switchBrightness = (percentage) => {
     console.log(results.data)
     return results.data
   })  
-}
-
-module.exports = {
-  switchOn,
-  switchOff,
-  switchColor,
-  switchBrightness
 }

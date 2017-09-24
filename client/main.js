@@ -1,6 +1,7 @@
 let makeSpeech = require('./speech')
 let services = {
-  $: require('jquery')
+  $: require('jquery'),
+  window: window
 }
 
 // Using dependency injection

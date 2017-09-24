@@ -1,12 +1,9 @@
-// Util dependencies
-let {
-  switchOn,
-  switchOff,
-  switchColor,
-  switchBrightness
-} = require('../utils/switches.js')
+// Util dependencies 
+// NOTE: we have to wrap it in the switches object to be able to use sinon stub; This is annoying but it allows us to write unit tests
+let switches = require('../utils/switches.js')
 
-// We cannot use arrow functions for constructor functions
+// Constuctor function
+// NOTE: We cannot use arrow functions for constructor functions
 let makeSpeech = function(services){
   this.init = () => {
     this.cacheDOM()
@@ -19,7 +16,7 @@ let makeSpeech = function(services){
   }
   this.setup = () => {
     this.transcript = 'Text renders here'        
-    this.recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition)()
+    this.recognition = new (services.window.SpeechRecognition || services.window.webkitSpeechRecognition || services.window.mozSpeechRecognition || services.window.msSpeechRecognition)()
     this.recognition.lang = 'en-US';
     this.recognition.interimResults = true;
     this.recognition.continuous = true;
@@ -39,24 +36,24 @@ let makeSpeech = function(services){
   this.regexSwitch = (transcript) => {
     if (/open/gi.exec(transcript)) {
       console.log('open');
-      switchOn()
+      switches.switchOn()
     } else if (/close/gi.exec(transcript)) {
       console.log('close');
-      switchOff()
+      switches.switchOff()
     } else if (/magic/gi.exec(transcript)) {
       console.log('magic');
-      switchColor('random')
+      switches.switchColor('random')
     } else if (/white/gi.exec(transcript)) {
-      switchColor('white')
+      switches.switchColor('white')
     } else if (/strong/gi.exec(transcript)) {
       console.log('strong');
-      switchBrightness(1)
+      switches.switchBrightness(1)
     } else if (/medium/gi.exec(transcript)) {
       console.log('medium');
-      switchBrightness(0.6)
+      switches.switchBrightness(0.6)
     } else if (/weak/gi.exec(transcript)) {
       console.log('weak');
-      switchBrightness(0.2)
+      switches.switchBrightness(0.2)
     }
   }
   this.restart = () => {
