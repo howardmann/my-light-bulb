@@ -57,29 +57,18 @@ describe('#speech', () => {
   describe('.callSwitch', () => {
     it('should update this.transcript and call this.render and this.regexSwitch', () => {
       // Mock event and spies
-      let actual = 'hello world'
-
-      let mockEvent = {
-        resultIndex: 0,
-        results: {
-          0: {
-           0: {
-             transcript: actual
-           } 
-          }
-        }
-      }
+      let text = 'hello world'
       let renderSpy = sinon.spy(speech, 'render')
       let regexSwitchSpy = sinon.spy(speech, 'regexSwitch')
       
       // Call function
       speech.setup()
-      speech.callSwitch(mockEvent)
+      speech.callSwitch(text)
 
       // Assertions
-      expect(speech.transcript).to.equal(actual)
-      expect(renderSpy.calledWith(actual)).to.be.true
-      expect(regexSwitchSpy.calledWith(actual)).to.be.true
+      expect(speech.transcript).to.equal(text)
+      expect(renderSpy.calledWith(text)).to.be.true
+      expect(regexSwitchSpy.calledWith(text)).to.be.true
     })
   })
   describe('.restart', () => {
@@ -151,22 +140,13 @@ describe('#speech', () => {
   describe('.bindEvents', () => {
     describe('for recognition.onresult', () => {
       let stubCallSwitch;
-      let stubBind;
       beforeEach('setup stubs and bindEvents', () => {
         speech.setup()
-
-        // Stub out callSwitch and it's bind method and return the stubbed version of itself
+        // Stub out callSwitch
         stubCallSwitch = sinon.stub(speech, 'callSwitch')
-        stubBind = sinon.stub(speech.callSwitch, 'bind').returns(speech.callSwitch)
       })
       afterEach('restore stubs', () => {
         stubCallSwitch.restore()
-        stubBind.restore()
-      })
-      it('should bind the callSwitch event to recognition.onresult', () => {
-        speech.bindEvents()
-        expect(stubBind.called).to.be.true
-        expect(speech.recognition.onresult).to.be.eql(stubCallSwitch)
       })
       it('should trigger callSwitch if recognition.onresult is called', () => {
         let mockEvent = {
@@ -182,7 +162,7 @@ describe('#speech', () => {
         speech.bindEvents()
         speech.recognition.onresult(mockEvent)
         expect(stubCallSwitch.called).to.be.true
-        expect(stubCallSwitch.calledWith(mockEvent)).to.be.true
+        expect(stubCallSwitch.calledWith('gday')).to.be.true
       })
     })
     describe('for recognition.onend', () => {

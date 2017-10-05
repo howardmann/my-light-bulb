@@ -23,12 +23,15 @@ let makeSpeech = function(services){
     this.recognition.start();
   }
   this.bindEvents = () => {
-    this.recognition.onresult = this.callSwitch.bind(this)
+    this.recognition.onresult = (event) => {
+      let index = event.resultIndex
+      let text = event.results[index][0].transcript
+      this.callSwitch(text)
+    }
     this.recognition.onend = this.restart.bind(this)
   }
-  this.callSwitch = (event) => {
-    let index = event.resultIndex
-    this.transcript = event.results[index][0].transcript
+  this.callSwitch = (text) => {
+    this.transcript = text
     console.log('You said: ', this.transcript)
     this.render(this.transcript)
     this.regexSwitch(this.transcript)
