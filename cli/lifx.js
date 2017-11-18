@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 // Dependencies
 let args = require('yargs-parser')(process.argv.slice(2))
 let {

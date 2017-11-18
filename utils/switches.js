@@ -1,10 +1,12 @@
+require('dotenv').config({ path: __dirname + '/../.env' });
+
 let switches = module.exports = {}
 
 // Dependencies
 let axios = require('axios')
 
 // API and bearer token
-const TOKEN = process.env.LIFX_API_KEY || 'cb42f657974bd22e97f0f155b56375fe7c99a86589739280bb877ff433fa6397'
+const TOKEN = process.env.LIFX_API_KEY
 let url = "https://api.lifx.com/v1/lights/all/state"
 let config = {
   headers: { 'Authorization': `Bearer ${TOKEN}` }
@@ -21,10 +23,12 @@ switches.switchOn = () => {
 
 switches.switchOff = () => {
   let payload = { power: "off" }
-
   axios.put(url, payload, config).then(results => {
     console.log(results.data)
     return results.data
+  })
+  .catch(err => {
+    console.log(err);
   })
 }
 

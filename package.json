@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.16.2",
+    "dotenv": "^4.0.0",
     "jquery": "^3.2.1",
     "yargs-parser": "^7.0.0"
   },
